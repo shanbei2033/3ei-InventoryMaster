@@ -1,8 +1,8 @@
-# InventoryMaster (仓库管理系统)
+# 仓库管理系统 (InventoryMaster)
 
 一个功能丰富的库存管理Web应用程序，具有实时数据同步、图表可视化和多平台访问能力。
 
-## 功能
+## 主要功能
 
 - 添加、编辑、删除库存项目
 - 实时库存数量跟踪
@@ -15,24 +15,6 @@
 - 批量操作
 - 展开/收回的操作面板
 - 全选功能
-
----
-
-## Features (功能特性 - English Version)
-
-A comprehensive warehouse management web application with real-time data synchronization, chart visualization, and multi-platform access capabilities.
-
-- Add, edit, and delete inventory items
-- Real-time inventory tracking
-- Low stock alert system
-- Data import/export functionality
-- Interactive charts showing inventory trends
-- Mobile responsive design
-- Offline support (PWA)
-- Search functionality
-- Bulk operations
-- Expandable/collapsible operation panel
-- Select all functionality
 
 ## 技术栈
 
@@ -50,22 +32,6 @@ A comprehensive warehouse management web application with real-time data synchro
 3. 启动服务器：`node server.js`
 4. 访问 `http://localhost:3000`
 
-## Technologies
-
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- Express.js (backend server)
-- Chart.js (visualization)
-- Node.js
-
-## Quick Start
-
-1. Clone this repository
-2. Install dependencies: `npm install`
-3. Start the server: `node server.js`
-4. Visit `http://localhost:3000`
-
 ## 部署
 
 系统支持多种部署方式：
@@ -76,40 +42,25 @@ A comprehensive warehouse management web application with real-time data synchro
 
 详细部署指南请参见文档文件。
 
-## Deployment
-
-The system supports multiple deployment methods:
-- Local deployment
-- WSL deployment
-- Android APK packaging
-- Static version deployment
-
-Detailed deployment guides are available in the documentation files.
-
 ## 版本
 
 当前版本：R2.3.3
 
-## Version
+## 未来计划添加的功能
 
-Current version: R2.3.3
+- 数据备份与云同步
+- 多用户权限管理
+- 条形码扫描支持
+- 供应商管理模块
+- 采购订单管理
+- 报表打印功能
+- 库存盘点功能
+- 库位管理
+- 高级数据分析
+- 移动端APP
+- API接口开放
+- 自定义字段功能
 
-## 使用说明
+## 作者
 
-应用程序提供图形界面和命令行工具进行库存管理。主Web界面允许您：
-- 添加新的库存项目（名称、数量和阈值）
-- 用直观的+/-按钮调整数量
-- 通过交互式图表查看库存趋势
-- 导出JSON数据进行备份
-- 从JSON文件导入数据
-- 对选定项目执行批量操作
-
-## Usage
-
-The application provides both a graphical interface and command-line tools for inventory management. The main web interface allows you to:
-- Add new inventory items with name, quantity, and threshold values
-- Adjust quantities with intuitive +/- buttons
-- View inventory trends through interactive charts
-- Export data as JSON for backup purposes
-- Import data from JSON files
-- Perform bulk operations on selected items
+此项目由 OpenClaw 开发维护
