@@ -1,61 +1,47 @@
-# 仓库管理系统
+# 仓库管理系统 (Warehouse Management System)
 
-这个仓库管理系统提供了两种版本：
+一个功能丰富的库存管理Web应用程序，具有实时数据同步、图表可视化和多平台访问能力。
 
-## 1. Web版（完整功能）
+## 主要特性
 
-### 功能
-- 图形化界面
-- 响应式设计，支持手机
-- 添加、修改、删除货物
+- 添加、编辑、删除库存项目
+- 实时库存数量跟踪
+- 低库存预警系统
+- 数据导入导出功能
+- 交互式图表展示库存趋势
+- 移动端适配
+- 离线支持（PWA）
 - 搜索功能
-- 数据统计
-- PWA支持（可添加到主屏幕）
+- 批量操作
+- 展开/收回的操作面板
+- 全选功能
 
-### 运行
-```bash
-cd ~/warehouse-manager
-node server.js
-```
-然后在浏览器中访问 http://localhost:3000
+## 技术栈
 
-## 2. Shell版（简化功能）
+- HTML5
+- CSS3
+- JavaScript (ES6+)
+- Express.js (后端服务器)
+- Chart.js (图表库)
+- Node.js
 
-### 功能
-- 添加货物
-- 查看所有货物
-- 修改货物数量
-- 删除货物
-- 搜索货物
-- 统计信息
+## 快速开始
 
-### 运行
-```bash
-cd ~/warehouse-manager
-./simple_inventory.sh
-```
+1. 克隆此仓库
+2. 安装依赖：`npm install`
+3. 启动服务器：`node server.js`
+4. 访问 `http://localhost:3000`
 
-## 3. Shell版（高级功能，需要安装jq）
+## 部署
 
-如果系统支持jq工具，可以使用功能更丰富的版本：
-```bash
-# Ubuntu/Debian系统安装jq
-sudo apt-get install jq
+系统支持多种部署方式：
+- 本地部署
+- WSL部署
+- Android APK打包
+- 静态版本部署
 
-# 或 CentOS/RHEL系统
-sudo yum install jq
+详细部署指南请参见 `FULL_DEPLOY_GUIDE.md`。
 
-# 或 macOS
-brew install jq
+## 版本
 
-# 然后运行
-./inventory_manager.sh
-```
-
-## 数据存储
-
-- Web版：数据存储在 `warehouse-data.json`
-- Shell版：数据存储在 `$HOME/warehouse_simple.txt`
-- 高级Shell版：数据存储在 `$HOME/warehouse_inventory.json`
-
-选择适合您需求的版本使用。
+当前版本：R2.3.3
