@@ -1,0 +1,1340 @@
+// 检查是否已登录
+function checkAuth() {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        // 如果没有令牌，重定向到登录页面
+        window.location.href = '/login';
+        return false;
+    }
+    
+    // 验证令牌是否仍然有效（可选）
+    // 这里可以发起一个轻量级API请求验证令牌
+    return true;
+}
+
+// 获取当前用户名
+async function getCurrentUser() {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        return null;
+    }
+    
+    try {
+        // 解码JWT令牌获取用户信息
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        return tokenPayload.username;
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        return null;
+    }
+}
+
+// 登出功能
+function logout() {
+    localStorage.removeItem('authToken');
+    window.location.href = '/login';
+}
+
+// 显示用户信息和登出选项
+function showUserInfo() {
+    getCurrentUser().then(username => {
+        if (username) {
+            // 更新用户名显示
+            const usernameDisplay = document.getElementById('usernameDisplay');
+            if (usernameDisplay) {
+                usernameDisplay.textContent = username;
+            }
+            
+            // 添加事件监听器（如果尚未添加）
+            if (!window.settingsInitialized) {
+                document.getElementById('settingsButton').addEventListener('click', toggleSettingsDropdown);
+                document.getElementById('logoutBtn').addEventListener('click', logout);
+                document.getElementById('userSettingsBtn').addEventListener('click', () => {
+                    window.location.href = '/settings';
+                });
+                
+                // 点击外部区域隐藏下拉菜单
+                document.addEventListener('click', function(event) {
+                    const dropdown = document.getElementById('settingsDropdown');
+                    const button = document.getElementById('settingsButton');
+                    
+                    if (button && dropdown && !button.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+                
+                window.settingsInitialized = true;
+            }
+        }
+    });
+}
+
+// 切换设置下拉菜单
+function toggleSettingsDropdown() {
+    const dropdown = document.getElementById('settingsDropdown');
+    if (dropdown.classList.contains('visible')) {
+        // 隐藏下拉菜单
+        dropdown.classList.remove('visible');
+        setTimeout(() => {
+            dropdown.classList.add('hidden');
+        }, 300); // 等待动画完成后再隐藏
+    } else {
+        // 显示下拉菜单
+        dropdown.classList.remove('hidden');
+        // 强制重排以确保hidden类被移除后再添加visible类
+        dropdown.offsetHeight;
+        dropdown.classList.add('visible');
+    }
+}
+
+// 应用用户设置
+function applyUserSettings() {
+    const savedLanguage = localStorage.getItem('language') || 'zh-CN';
+    const savedTitle = localStorage.getItem('customTitle') || '仓库管理系统';
+    
+    // 更新页面标题
+    document.querySelector('header h1').innerHTML = '📦 ' + savedTitle;
+    
+    // 根据语言设置更新其他文本（如果需要）
+    if (savedLanguage === 'en-US') {
+        // 英文设置
+        const inventoryContainers = document.querySelectorAll('.inventory-container h2');
+        inventoryContainers.forEach(element => {
+            element.textContent = 'Inventory List';
+        });
+        
+        const statCards = document.querySelectorAll('.stat-card h3');
+        statCards[0].textContent = 'Total Items';
+        statCards[1].textContent = 'Total Quantity';
+        
+        const actionButtons = document.querySelector('#toggleButtonsBtn');
+        if (actionButtons) {
+            actionButtons.textContent = 'Actions';
+        }
+        
+        const searchInput = document.querySelector('#searchInput');
+        if (searchInput) {
+            searchInput.placeholder = 'Search items...';
+        }
+        
+        const itemLabels = document.querySelectorAll('.input-group label');
+        if (itemLabels.length >= 3) {
+            itemLabels[0].textContent = 'Item Name:';
+            itemLabels[1].textContent = 'Quantity:';
+            itemLabels[2].textContent = 'Low Stock Alert:';
+        }
+        
+        // 更新输入框占位符
+        const itemNameInput = document.querySelector('#itemName');
+        if (itemNameInput) {
+            itemNameInput.placeholder = 'Enter item name';
+        }
+        
+        const itemQuantityInput = document.querySelector('#itemQuantity');
+        if (itemQuantityInput) {
+            itemQuantityInput.placeholder = 'Enter quantity';
+        }
+        
+        const itemThresholdInput = document.querySelector('#itemThreshold');
+        if (itemThresholdInput) {
+            itemThresholdInput.placeholder = 'Enter minimum stock';
+        }
+        
+        const addItemBtn = document.querySelector('#addItemBtn');
+        if (addItemBtn) {
+            addItemBtn.textContent = 'Add Item';
+        }
+        
+        const emptyState = document.querySelector('.empty-state p:first-child');
+        if (emptyState) {
+            emptyState.textContent = 'No inventory data';
+        }
+        
+        // 更新操作按钮提示文本和内容
+        const exportBtn = document.querySelector('#exportDataBtn');
+        if (exportBtn) {
+            exportBtn.title = 'Export Data';
+            exportBtn.textContent = 'Export';
+        }
+        
+        const importBtn = document.querySelector('#importDataBtn');
+        if (importBtn) {
+            importBtn.title = 'Import Data';
+            importBtn.textContent = 'Import';
+        }
+        
+        const selectAllBtn = document.querySelector('#selectAllBtn');
+        if (selectAllBtn) {
+            selectAllBtn.title = 'Select All';
+            selectAllBtn.textContent = 'Select All';
+        }
+        
+        const batchDeleteBtn = document.querySelector('#batchDeleteBtn');
+        if (batchDeleteBtn) {
+            batchDeleteBtn.title = 'Batch Delete';
+            batchDeleteBtn.textContent = 'Delete';
+        }
+        
+        // 更新库存项目的语言文本
+        updateInventoryItemTexts('en-US');
+    } else {
+        // 中文设置（默认）
+        const inventoryContainers = document.querySelectorAll('.inventory-container h2');
+        inventoryContainers.forEach(element => {
+            element.textContent = '库存清单';
+        });
+        
+        const statCards = document.querySelectorAll('.stat-card h3');
+        statCards[0].textContent = '总货物种类';
+        statCards[1].textContent = '总数量';
+        
+        const actionButtons = document.querySelector('#toggleButtonsBtn');
+        if (actionButtons) {
+            actionButtons.textContent = '操作';
+        }
+        
+        const searchInput = document.querySelector('#searchInput');
+        if (searchInput) {
+            searchInput.placeholder = '搜索货物...';
+        }
+        
+        const itemLabels = document.querySelectorAll('.input-group label');
+        if (itemLabels.length >= 3) {
+            itemLabels[0].textContent = '货物名称:';
+            itemLabels[1].textContent = '货物数量:';
+            itemLabels[2].textContent = '最低库存提醒:';
+        }
+        
+        // 更新输入框占位符
+        const itemNameInput = document.querySelector('#itemName');
+        if (itemNameInput) {
+            itemNameInput.placeholder = '输入货物名称';
+        }
+        
+        const itemQuantityInput = document.querySelector('#itemQuantity');
+        if (itemQuantityInput) {
+            itemQuantityInput.placeholder = '输入数量';
+        }
+        
+        const itemThresholdInput = document.querySelector('#itemThreshold');
+        if (itemThresholdInput) {
+            itemThresholdInput.placeholder = '输入最低库存';
+        }
+        
+        const addItemBtn = document.querySelector('#addItemBtn');
+        if (addItemBtn) {
+            addItemBtn.textContent = '添加货物';
+        }
+        
+        const emptyState = document.querySelector('.empty-state p:first-child');
+        if (emptyState) {
+            emptyState.textContent = '暂无库存数据';
+        }
+        
+        // 更新操作按钮提示文本和内容
+        const exportBtn = document.querySelector('#exportDataBtn');
+        if (exportBtn) {
+            exportBtn.title = '导出数据';
+            exportBtn.textContent = '导出';
+        }
+        
+        const importBtn = document.querySelector('#importDataBtn');
+        if (importBtn) {
+            importBtn.title = '导入数据';
+            importBtn.textContent = '导入';
+        }
+        
+        const selectAllBtn = document.querySelector('#selectAllBtn');
+        if (selectAllBtn) {
+            selectAllBtn.title = '全选';
+            selectAllBtn.textContent = '全选';
+        }
+        
+        const batchDeleteBtn = document.querySelector('#batchDeleteBtn');
+        if (batchDeleteBtn) {
+            batchDeleteBtn.title = '批量删除';
+            batchDeleteBtn.textContent = '删除';
+        }
+        
+        // 更新库存项目的语言文本
+        updateInventoryItemTexts('zh-CN');
+    }
+}
+
+// 更新库存项目中文本
+function updateInventoryItemTexts(language) {
+    // 更新所有库存项目的删除按钮文本
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        if (language === 'en-US') {
+            button.textContent = 'Delete';
+        } else {
+            button.textContent = '删除';
+        }
+    });
+    
+    // 更新低库存提醒标识
+    const lowStockItems = document.querySelectorAll('.inventory-item.low-stock .item-name');
+    lowStockItems.forEach(element => {
+        // 如果是低库存项目，确保其警告标识正确显示
+        if (language === 'en-US') {
+            // 对于英文环境，我们可以添加额外的警告标识
+        } else {
+            // 中文环境
+        }
+    });
+}
+
+// 在DOM加载完成后检查身份验证
+document.addEventListener('DOMContentLoaded', () => {
+    if (!checkAuth()) {
+        return; // 如果未认证，则不初始化WarehouseManager
+    }
+    
+    // 显示用户信息
+    showUserInfo();
+    
+    // 应用用户设置
+    applyUserSettings();
+});
+
+// 仓库管理系统 JavaScript 逻辑
+class WarehouseManager {
+    constructor() {
+        this.items = [];
+        this.nextId = 1;
+        this.lowStockThreshold = 5; // 默认低库存阈值
+        this.selectedItems = new Set(); // 用于批量操作
+        this.expandedChartId = null; // 当前展开的图表ID
+        this.chartHistory = {}; // 存储每个物品的历史数据
+        this.init();
+    }
+
+    init() {
+        this.loadFromStorage();
+        this.initializeChartHistory();
+        this.bindEvents();
+        this.render();
+    }
+
+    initializeChartHistory() {
+        // 初始化图表历史数据，每个物品都有一个历史记录数组
+        for (const item of this.items) {
+            if (!this.chartHistory[item.id]) {
+                // 初始化历史记录，包含当前数量和过去几天的数据
+                this.chartHistory[item.id] = [
+                    { date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: Math.max(1, item.quantity - 3) },
+                    { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: Math.max(1, item.quantity - 2) },
+                    { date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: Math.max(1, item.quantity - 1) },
+                    { date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: item.quantity },
+                    { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: item.quantity },
+                    { date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: item.quantity },
+                    { date: new Date().toISOString().split('T')[0], quantity: item.quantity }
+                ];
+            }
+        }
+    }
+
+    async loadFromStorage() {
+        try {
+            // 首先尝试从服务器加载数据
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/inventory', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                this.items = data.items || [];
+                this.nextId = data.nextId || 1;
+            } else {
+                // 如果服务器不可用，则从本地存储加载
+                const savedData = localStorage.getItem('warehouseData');
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    this.items = parsed.items || [];
+                    this.nextId = parsed.nextId || 1;
+                } else {
+                    // 初始化示例数据
+                    this.items = [
+                        { id: 1, name: "笔记本电脑", quantity: 10, threshold: 5 },
+                        { id: 2, name: "鼠标", quantity: 50, threshold: 10 },
+                        { id: 3, name: "键盘", quantity: 30, threshold: 8 },
+                        { id: 4, name: "显示器", quantity: 15, threshold: 3 },
+                        { id: 5, name: "音响", quantity: 8, threshold: 2 }
+                    ];
+                    this.nextId = 6;
+                    this.saveToStorage();
+                }
+            }
+        } catch (error) {
+            // 如果服务器请求失败，从本地存储加载
+            const savedData = localStorage.getItem('warehouseData');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                this.items = parsed.items || [];
+                this.nextId = parsed.nextId || 1;
+            } else {
+                // 初始化示例数据
+                this.items = [
+                    { id: 1, name: "笔记本电脑", quantity: 10, threshold: 5 },
+                    { id: 2, name: "鼠标", quantity: 50, threshold: 10 },
+                    { id: 3, name: "键盘", quantity: 30, threshold: 8 },
+                    { id: 4, name: "显示器", quantity: 15, threshold: 3 },
+                    { id: 5, name: "音响", quantity: 8, threshold: 2 }
+                ];
+                this.nextId = 6;
+                this.saveToStorage();
+            }
+        }
+        this.initializeChartHistory();
+        this.render();
+    }
+
+    async saveToStorage() {
+        // 尝试保存到服务器
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    items: this.items,
+                    nextId: this.nextId,
+                    chartHistory: this.chartHistory
+                })
+            });
+            
+            if (!response.ok) {
+                // 如果服务器保存失败，保存到本地存储
+                const data = {
+                    items: this.items,
+                    nextId: this.nextId,
+                    chartHistory: this.chartHistory
+                };
+                localStorage.setItem('warehouseData', JSON.stringify(data));
+            }
+        } catch (error) {
+            // 如果服务器保存失败，保存到本地存储
+            const data = {
+                items: this.items,
+                nextId: this.nextId,
+                chartHistory: this.chartHistory
+            };
+            localStorage.setItem('warehouseData', JSON.stringify(data));
+        }
+    }
+
+    async addItem(name, quantity, threshold = 5) {
+        if (!name.trim()) return false;
+        
+        try {
+            // 先尝试保存到服务器
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: name.trim(),
+                    quantity: parseInt(quantity) || 0,
+                    threshold: parseInt(threshold) || 5
+                })
+            });
+            
+            if (!response.ok) {
+                alert('添加物品失败，请重试');
+                return false;
+            }
+            
+            const savedItem = await response.json();
+            
+            // 服务器保存成功后，更新本地数据
+            this.items.push(savedItem);
+            this.nextId = Math.max(this.nextId, savedItem.id + 1); // 确保nextId正确
+            
+            // 为新项目初始化图表历史
+            this.chartHistory[savedItem.id] = [
+                { date: new Date().toISOString().split('T')[0], quantity: savedItem.quantity }
+            ];
+            
+        } catch (error) {
+            alert('网络错误，添加物品失败');
+            console.error('Add item error:', error);
+            return false;
+        }
+        
+        this.render();
+        return true;
+    }
+
+    async updateQuantity(id, newQuantity) {
+        const item = this.items.find(item => item.id === id);
+        if (item) {
+            const oldQuantity = item.quantity;
+            const newQty = Math.max(0, parseInt(newQuantity) || 0);
+            
+            // 先尝试更新服务器
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/inventory/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        quantity: newQty
+                    })
+                });
+                
+                if (!response.ok) {
+                    alert('更新数量失败，请重试');
+                    return;
+                }
+            } catch (error) {
+                alert('网络错误，更新数量失败');
+                console.error('Update quantity error:', error);
+                return;
+            }
+            
+            // 服务器更新成功后，更新本地数据
+            item.quantity = newQty;
+            
+            // 更新图表历史记录
+            const today = new Date().toISOString().split('T')[0];
+            if (!this.chartHistory[id]) {
+                this.chartHistory[id] = [];
+            }
+            
+            // 检查今天是否已有记录
+            const todayRecordIndex = this.chartHistory[id].findIndex(record => record.date === today);
+            if (todayRecordIndex !== -1) {
+                this.chartHistory[id][todayRecordIndex].quantity = item.quantity;
+            } else {
+                // 添加今天的记录
+                this.chartHistory[id].push({ date: today, quantity: item.quantity });
+                // 只保留最近7天的数据
+                this.chartHistory[id] = this.chartHistory[id].slice(-7);
+            }
+            
+            this.render();
+        }
+    }
+
+    async deleteItem(id) {
+        // 找到要删除的项目元素
+        const itemElement = document.querySelector(`.inventory-item[data-id="${id}"]`);
+        
+        // 先尝试从服务器删除
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/inventory/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                // 服务器删除失败，提示用户
+                alert('删除失败，请重试');
+                return;
+            }
+        } catch (error) {
+            // 服务器删除失败，提示用户
+            alert('网络错误，删除失败');
+            console.error('Delete error:', error);
+            return;
+        }
+        
+        // 服务器删除成功后，从本地移除项目并执行动画
+        if (itemElement) {
+            // 添加删除动画
+            itemElement.style.transition = 'all 0.3s ease';
+            itemElement.style.opacity = '0';
+            itemElement.style.transform = 'translateX(-100%)';
+            itemElement.style.height = '0';
+            itemElement.style.padding = '0';
+            itemElement.style.margin = '0';
+            itemElement.style.overflow = 'hidden';
+            
+            // 等待动画完成后从本地移除
+            setTimeout(() => {
+                this.items = this.items.filter(item => item.id !== id);
+                
+                // 删除对应的图表历史
+                if (this.chartHistory[id]) {
+                    delete this.chartHistory[id];
+                }
+                
+                // 如果删除的是当前展开图表的项目，收起图表
+                if (this.expandedChartId === id) {
+                    this.expandedChartId = null;
+                }
+                
+                this.render();
+            }, 300);
+        } else {
+            // 如果没有找到元素（比如在搜索视图中），直接从本地移除
+            this.items = this.items.filter(item => item.id !== id);
+            
+            // 删除对应的图表历史
+            if (this.chartHistory[id]) {
+                delete this.chartHistory[id];
+            }
+            
+            // 如果删除的是当前展开图表的项目，收起图表
+            if (this.expandedChartId === id) {
+                this.expandedChartId = null;
+            }
+            
+            this.render();
+        }
+    }
+
+    // 全选功能
+    selectAllItems(selectAll = true) {
+        // 获取当前显示的项目（考虑搜索过滤）
+        const searchQuery = document.getElementById('searchInput').value;
+        let displayedItems;
+        if (!searchQuery) {
+            displayedItems = this.items;
+        } else {
+            displayedItems = this.items.filter(item => 
+                item.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        if (selectAll) {
+            // 选中所有显示的项目
+            displayedItems.forEach(item => {
+                this.selectedItems.add(item.id);
+            });
+        } else {
+            // 取消选中所有显示的项目
+            displayedItems.forEach(item => {
+                this.selectedItems.delete(item.id);
+            });
+        }
+
+        this.render();
+    }
+
+    // 批量删除选中的项目
+    async deleteSelectedItems() {
+        if (this.selectedItems.size === 0) {
+            alert('请先选择要删除的项目');
+            return;
+        }
+
+        if (!confirm(`确定要删除选中的 ${this.selectedItems.size} 个项目吗？`)) {
+            return;
+        }
+
+        // 先尝试从服务器删除选中的项目
+        const selectedIds = Array.from(this.selectedItems);
+        let allSuccessful = true;
+
+        for (const id of selectedIds) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/inventory/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error(`Failed to delete item ${id}:`, response.statusText);
+                    allSuccessful = false;
+                }
+            } catch (error) {
+                console.error(`Error deleting item ${id}:`, error);
+                allSuccessful = false;
+            }
+        }
+
+        if (!allSuccessful) {
+            alert('部分项目删除失败，请重试');
+            return;
+        }
+
+        // 服务器删除成功后，从本地移除项目
+        for (const id of selectedIds) {
+            this.items = this.items.filter(item => item.id !== id);
+            
+            // 删除对应的图表历史
+            if (this.chartHistory[id]) {
+                delete this.chartHistory[id];
+            }
+            
+            // 如果删除的是当前展开图表的项目，收起图表
+            if (this.expandedChartId === id) {
+                this.expandedChartId = null;
+            }
+        }
+
+        // 清空选中项
+        this.selectedItems.clear();
+
+        this.render();
+    }
+
+    // 切换图表显示
+    toggleChart(itemId) {
+        if (this.expandedChartId === itemId) {
+            // 如果当前展开的就是这个图表，则收起
+            this.expandedChartId = null;
+        } else {
+            // 否则展开这个图表
+            this.expandedChartId = itemId;
+        }
+        this.render();
+    }
+
+    // 绘制图表
+    drawChart(canvasId, itemId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const history = this.chartHistory[itemId] || [];
+        
+        if (history.length === 0) return;
+        
+        // 设置画布大小
+        canvas.width = canvas.offsetWidth * 2;
+        canvas.height = canvas.offsetHeight * 2;
+        ctx.scale(2, 2); // 高分辨率
+        
+        // 获取最大值和最小值以确定范围
+        const quantities = history.map(item => item.quantity);
+        const maxQty = Math.max(...quantities);
+        const minQty = Math.min(...quantities);
+        const range = maxQty - minQty || 1; // 防止范围为0
+        
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+        const padding = 30;
+        const chartWidth = width - 2 * padding;
+        const chartHeight = height - 2 * padding;
+        
+        // 清空画布
+        ctx.clearRect(0, 0, width, height);
+        
+        // 绘制网格线
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        
+        // 水平网格线
+        for (let i = 0; i <= 5; i++) {
+            const y = padding + (chartHeight / 5) * i;
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(width - padding, y);
+            ctx.stroke();
+            
+            // 添加数值标签
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'right';
+            const value = Math.round(maxQty - (range / 5) * i);
+            ctx.fillText(value.toString(), padding - 5, y + 4);
+        }
+        
+        // 垂直网格线和日期标签
+        for (let i = 0; i < history.length; i++) {
+            const x = padding + (chartWidth / (history.length - 1)) * i;
+            ctx.beginPath();
+            ctx.moveTo(x, padding);
+            ctx.lineTo(x, height - padding);
+            ctx.stroke();
+            
+            // 添加日期标签
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            const date = history[i].date.split('-')[2]; // 只显示日
+            ctx.fillText(date, x, height - 5);
+        }
+        
+        // 绘制折线
+        ctx.beginPath();
+        for (let i = 0; i < history.length; i++) {
+            const x = padding + (chartWidth / (history.length - 1)) * i;
+            const y = padding + chartHeight - ((history[i].quantity - minQty) / range) * chartHeight;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.strokeStyle = '#667eea';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // 绘制数据点
+        for (let i = 0; i < history.length; i++) {
+            const x = padding + (chartWidth / (history.length - 1)) * i;
+            const y = padding + chartHeight - ((history[i].quantity - minQty) / range) * chartHeight;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#667eea';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        // 添加标题
+        const item = this.items.find(item => item.id === itemId);
+        if (item) {
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${item.name} 数量趋势`, width / 2, 15);
+        }
+    }
+
+    // 导出数据
+    async exportData() {
+        try {
+            // 从服务器获取最新数据，确保导出的是最新的数据
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/inventory', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const dataStr = JSON.stringify({
+                    items: data.items || [],
+                    nextId: data.nextId || 1,
+                    chartHistory: this.chartHistory
+                }, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `warehouse-backup-${new Date().toISOString().slice(0, 19)}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+            } else {
+                // 如果服务器获取失败，使用本地数据导出
+                const dataStr = JSON.stringify({
+                    items: this.items,
+                    nextId: this.nextId,
+                    chartHistory: this.chartHistory
+                }, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `warehouse-backup-${new Date().toISOString().slice(0, 19)}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+            }
+        } catch (error) {
+            // 如果服务器获取失败，使用本地数据导出
+            const dataStr = JSON.stringify({
+                items: this.items,
+                nextId: this.nextId,
+                chartHistory: this.chartHistory
+            }, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `warehouse-backup-${new Date().toISOString().slice(0, 19)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+    }
+
+    // 导入数据
+    async importData(file) {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                
+                if (importedData.items && Array.isArray(importedData.items)) {
+                    // 发送导入请求到服务器
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('/api/import', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(importedData.items)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        // 重新从服务器加载数据以确保同步
+                        await this.loadFromStorage();
+                        this.render();
+                        alert(result.message || '数据导入成功！');
+                    } else {
+                        const errorResult = await response.json();
+                        alert('导入失败：' + errorResult.error);
+                    }
+                } else {
+                    alert('导入的文件格式不正确！');
+                }
+            } catch (error) {
+                alert('导入失败：文件格式错误或损坏！');
+                console.error('Import error:', error);
+            }
+        };
+        reader.onerror = () => {
+            alert('导入失败：无法读取文件！');
+        };
+        reader.readAsText(file);
+    }
+
+    // 检查低库存
+    isLowStock(item) {
+        return item.quantity <= (item.threshold || this.lowStockThreshold);
+    }
+
+    async searchItems(query) {
+        if (!query) return this.items;
+        
+        try {
+            // 使用服务器端的增强搜索功能
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/search/${encodeURIComponent(query)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                return await response.json();
+            } else {
+                // 如果服务器搜索失败，使用客户端搜索作为备选
+                return this.items.filter(item => 
+                    item.name.toLowerCase().includes(query.toLowerCase())
+                );
+            }
+        } catch (error) {
+            // 如果服务器搜索失败，使用客户端搜索作为备选
+            return this.items.filter(item => 
+                item.name.toLowerCase().includes(query.toLowerCase())
+            );
+        }
+    }
+
+    getTotalItems() {
+        return this.items.length;
+    }
+
+    getTotalQuantity() {
+        return this.items.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    // 同步版本的搜索方法，用于渲染时
+    // 修复：前端不执行拼音搜索，只做基础搜索，拼音搜索由服务器端完成
+    searchItemsSync(query) {
+        if (!query) return this.items;
+        
+        // 只做基础的文本匹配，拼音搜索由服务器端完成
+        return this.items.filter(item => 
+            item.name.toLowerCase().includes(query.toLowerCase())
+        );
+    }
+
+    bindEvents() {
+        const addItemBtn = document.getElementById('addItemBtn');
+        const itemNameInput = document.getElementById('itemName');
+        const itemQuantityInput = document.getElementById('itemQuantity');
+        const itemThresholdInput = document.getElementById('itemThreshold');
+        const searchInput = document.getElementById('searchInput');
+        const fileInput = document.getElementById('fileInput');
+        const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+
+        // 添加货物按钮
+        addItemBtn.addEventListener('click', () => {
+            const name = itemNameInput.value;
+            const quantity = itemQuantityInput.value;
+            const threshold = itemThresholdInput.value;
+
+            if (this.addItem(name, quantity, threshold)) {
+                itemNameInput.value = '';
+                itemQuantityInput.value = '';
+                itemThresholdInput.value = '5'; // 重置为默认值
+                itemNameInput.focus();
+            }
+        });
+
+        // 全选复选框
+        selectAllCheckbox.addEventListener('change', () => {
+            this.selectAllItems(selectAllCheckbox.checked);
+        });
+
+        // 批量删除按钮
+        batchDeleteBtn.addEventListener('click', () => {
+            this.deleteSelectedItems();
+        });
+
+        // 设置页面的导入导出功能
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        const importDataBtn = document.getElementById('importDataBtn');
+        const settingsFileInput = document.getElementById('fileInput');
+        
+        if (exportDataBtn) {
+            exportDataBtn.addEventListener('click', () => {
+                this.exportData();
+            });
+        }
+        
+        if (importDataBtn) {
+            importDataBtn.addEventListener('click', () => {
+                if (settingsFileInput) {
+                    settingsFileInput.click();
+                }
+            });
+        }
+        
+        if (settingsFileInput) {
+            settingsFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    this.importData(e.target.files[0]);
+                    e.target.value = ''; // 重置文件输入
+                }
+            });
+        }
+
+        // 按Enter键添加货物
+        itemNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addItemBtn.click();
+            }
+        });
+
+        itemQuantityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addItemBtn.click();
+            }
+        });
+
+        // 搜索功能 - 实现实时搜索
+        searchInput.addEventListener('input', () => {
+            this.render();
+        });
+        
+        // 搜索框的回车事件
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.render();
+            }
+        });
+
+        // 导出数据按钮
+        exportDataBtn.addEventListener('click', () => {
+            this.exportData();
+        });
+
+        // 导入数据按钮
+        importDataBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 文件选择事件
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                this.importData(e.target.files[0]);
+                e.target.value = ''; // 重置文件输入
+            }
+        });
+
+        // 全选按钮
+        selectAllBtn.addEventListener('click', () => {
+            this.selectAllItems();
+        });
+
+        // 批量删除按钮
+        batchDeleteBtn.addEventListener('click', () => {
+            this.deleteSelectedItems();
+        });
+
+        // 操作按钮展开/收回切换
+        toggleButtonsBtn.addEventListener('click', () => {
+            actionButtonsContainer.classList.toggle('collapsed');
+            
+            // 更新按钮文本
+            const isCollapsed = actionButtonsContainer.classList.contains('collapsed');
+            const currentLang = localStorage.getItem('language') || 'zh-CN';
+            if (currentLang === 'en-US') {
+                toggleButtonsBtn.textContent = isCollapsed ? 'Actions' : 'Collapse';
+            } else {
+                toggleButtonsBtn.textContent = isCollapsed ? '操作' : '收起';
+            }
+        });
+        
+        // 浮动操作按钮功能 - 添加安全检查
+        if (fabToggle && fabMenu && fabExportBtn && fabImportBtn && fabSelectAllBtn && fabBatchDeleteBtn) {
+            fabToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fabMenu.classList.toggle('hidden');
+            });
+            
+            // 为浮动菜单按钮添加事件
+            fabExportBtn.addEventListener('click', () => {
+                this.exportData();
+                fabMenu.classList.add('hidden');
+            });
+            
+            fabImportBtn.addEventListener('click', () => {
+                fileInput.click();
+                fabMenu.classList.add('hidden');
+            });
+            
+            fabSelectAllBtn.addEventListener('click', () => {
+                this.selectAllItems();
+                fabMenu.classList.add('hidden');
+            });
+            
+            fabBatchDeleteBtn.addEventListener('click', () => {
+                this.deleteSelectedItems();
+                fabMenu.classList.add('hidden');
+            });
+            
+            // 点击其他地方关闭菜单
+            document.addEventListener('click', (e) => {
+                if (fabToggle && fabMenu && !fabToggle.contains(e.target) && !fabMenu.contains(e.target)) {
+                    fabMenu.classList.add('hidden');
+                }
+            });
+        }
+    }
+
+    render() {
+        this.renderStats();
+        this.renderInventory();
+        this.updateSelectAllCheckbox();
+    }
+    
+    // 更新全选复选框的状态
+    updateSelectAllCheckbox() {
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (!selectAllCheckbox) return;
+        
+        const searchQuery = document.getElementById('searchInput').value;
+        let displayedItems;
+        if (!searchQuery) {
+            displayedItems = this.items;
+        } else {
+            displayedItems = this.items.filter(item => 
+                item.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+        
+        // 检查是否所有显示的项目都被选中
+        const allSelected = displayedItems.length > 0 && displayedItems.every(item => this.selectedItems.has(item.id));
+        
+        // 如果没有任何项目，也应该取消选中
+        selectAllCheckbox.checked = displayedItems.length > 0 && allSelected;
+    }
+
+    renderStats() {
+        document.getElementById('totalItems').textContent = this.getTotalItems();
+        document.getElementById('totalQuantity').textContent = this.getTotalQuantity();
+    }
+
+    async renderInventory() {
+        const inventoryList = document.getElementById('inventoryList');
+        const searchQuery = document.getElementById('searchInput').value;
+        const currentLang = localStorage.getItem('language') || 'zh-CN';
+        
+        // 对于空搜索，显示所有项目；否则执行搜索
+        let filteredItems;
+        if (!searchQuery) {
+            filteredItems = this.items;
+        } else {
+            // 使用异步搜索方法
+            filteredItems = await this.searchItems(searchQuery);
+        }
+
+        if (filteredItems.length === 0) {
+            let emptyStateText, emptyStateSubText;
+            if (currentLang === 'en-US') {
+                emptyStateText = 'No inventory data';
+                emptyStateSubText = searchQuery ? `No results found for "${searchQuery}"` : 'Add your first item!';
+            } else {
+                emptyStateText = '暂无库存数据';
+                emptyStateSubText = searchQuery ? `搜索"${searchQuery}"未找到结果` : '添加您的第一件货物吧！';
+            }
+            
+            inventoryList.innerHTML = `
+                <div class="empty-state">
+                    <p>${emptyStateText}</p>
+                    <p>${emptyStateSubText}</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 创建新的HTML内容
+        const newHTML = filteredItems.map(item => {
+            const showChart = this.expandedChartId === item.id;
+            const chartId = `chart-${item.id}`;
+            
+            // 根据语言设置确定删除按钮文本
+            const deleteButtonText = currentLang === 'en-US' ? 'Delete' : '删除';
+            // 根据语言设置确定低库存提醒文本
+            const lowStockAlertText = currentLang === 'en-US' ? 'Low Stock Alert:' : '低库存提醒:';
+            
+            return `
+                <div class="inventory-item ${this.isLowStock(item) ? 'low-stock' : ''}" data-id="${item.id}">
+                    <div class="item-selector">
+                        <input type="checkbox" class="item-checkbox" data-id="${item.id}" ${this.selectedItems.has(item.id) ? 'checked' : ''}>
+                    </div>
+                    <div class="item-info" onclick="warehouseManager.toggleChart(${item.id})">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-id">ID: ${item.id} | ${lowStockAlertText} ${item.threshold || this.lowStockThreshold}</div>
+                    </div>
+                    <div class="item-controls">
+                        <div class="quantity-display">${item.quantity}</div>
+                        <button class="quantity-btn minus" onclick="warehouseManager.updateQuantity(${item.id}, ${Math.max(0, item.quantity - 1)})">-</button>
+                        <button class="quantity-btn plus" onclick="warehouseManager.updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                        <button class="delete-btn" onclick="warehouseManager.deleteItem(${item.id})">${deleteButtonText}</button>
+                    </div>
+                </div>
+                <div class="chart-container ${showChart ? 'expanded' : ''}" id="chart-area-${item.id}">
+                    <div class="chart-wrapper">
+                        <canvas id="${chartId}" class="inventory-chart"></canvas>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // 保存之前的元素引用以便比较
+        const previousItems = new Set();
+        const existingElements = inventoryList.querySelectorAll('.inventory-item');
+        existingElements.forEach(el => {
+            previousItems.add(parseInt(el.dataset.id));
+        });
+
+        // 更新内容
+        inventoryList.innerHTML = newHTML;
+
+        // 为新增的项目添加进入动画
+        const currentItems = new Set(filteredItems.map(item => item.id));
+        const addedItems = [...currentItems].filter(id => !previousItems.has(id));
+
+        addedItems.forEach(id => {
+            const newItem = inventoryList.querySelector(`.inventory-item[data-id="${id}"]`);
+            if (newItem) {
+                // 初始状态：透明且稍微缩小
+                newItem.style.opacity = '0';
+                newItem.style.transform = 'translateX(-20px) scale(0.95)';
+                newItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+                // 强制重绘后触发动画
+                setTimeout(() => {
+                    newItem.style.opacity = '1';
+                    newItem.style.transform = 'translateX(0) scale(1)';
+                }, 10);
+            }
+        });
+
+        // 为复选框添加事件监听器
+        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const itemId = parseInt(e.target.dataset.id);
+                if (e.target.checked) {
+                    this.selectedItems.add(itemId);
+                } else {
+                    this.selectedItems.delete(itemId);
+                }
+                
+                // 更新全选复选框状态
+                this.updateSelectAllCheckbox();
+            });
+        });
+
+        // 为展开的图表绘制图形
+        setTimeout(() => {
+            filteredItems.forEach(item => {
+                if (this.expandedChartId === item.id) {
+                    this.drawChart(`chart-${item.id}`, item.id);
+                }
+            });
+        }, 100);
+    }
+}
+
+// 初始化仓库管理系统
+let warehouseManager;
+document.addEventListener('DOMContentLoaded', () => {
+    warehouseManager = new WarehouseManager();
+});
+
+// PWA 安装功能
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    // Show install button if supported
+    showInstallButton();
+});
+
+function showInstallButton() {
+    // 创建安装按钮
+    const controlsDiv = document.querySelector('.controls');
+    const installBtn = document.createElement('button');
+    installBtn.textContent = '安装应用';
+    installBtn.className = 'btn-primary';
+    installBtn.style.marginTop = '15px';
+    installBtn.style.width = '100%';
+    
+    installBtn.addEventListener('click', () => {
+        // Hide the install button
+        installBtn.style.display = 'none';
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            }
+            deferredPrompt = null;
+        });
+    });
+    
+    controlsDiv.appendChild(installBtn);
+}
+
+// 注册 Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
+}

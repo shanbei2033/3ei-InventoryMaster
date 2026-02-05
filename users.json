@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "shanbei2033",
+      "password": "$2b$10$MIoUOe.AxrDSu8AVvJikBOr5jVWyoFP/YkqbKO2XlgscOzZYhVR7S",
+      "role": "user",
+      "createdAt": "2026-02-04T11:23:38.935Z"
+    }
+  ]
+}

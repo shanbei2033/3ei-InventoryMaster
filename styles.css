@@ -27,9 +27,126 @@ header {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-header h1 {
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.header-title {
+    flex: 1;
+}
+
+.header-title h1 {
     font-size: 2.5em;
     margin-bottom: 10px;
+}
+
+.header-title p {
+    margin: 0;
+}
+
+.header-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.settings-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.settings-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 200px;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-dropdown.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.settings-dropdown.hidden {
+    display: none;
+}
+
+.dropdown-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.logout-btn {
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+    color: #dc3545;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 5px 0;
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .settings-dropdown {
+        position: absolute;
+        right: 0;
+        left: auto;
+    }
 }
 
 .controls {
@@ -82,6 +199,44 @@ header h1 {
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* 统一按钮样式 */
+.btn-common {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-common:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
 .btn-secondary {
     background: #6c757d;
     color: white;
@@ -92,15 +247,89 @@ header h1 {
     font-size: 14px;
     margin-right: 10px;
     margin-bottom: 10px;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 .btn-secondary:hover {
     background: #5a6268;
+    transform: translateY(-1px);
+}
+
+/* 统一设置页面按钮样式 */
+#languageSelect, #titleInput {
+    padding: 10px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    transition: border-color 0.3s;
+}
+
+#languageSelect:focus, #titleInput:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+#saveSettingsBtn, #cancelBtn {
+    margin-right: 10px;
+    margin-bottom: 0;
+}
+
+/* 统一设置按钮样式 */
+.settings-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 统一下拉菜单项样式 */
+.dropdown-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 0;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.logout-btn {
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+    color: #dc3545;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 .action-buttons {
     margin-bottom: 20px;
+}
+
+.mobile-controls {
+    display: block;
 }
 
 .toggle-btn {
@@ -139,6 +368,70 @@ header h1 {
     padding-top: 0;
     padding-bottom: 0;
     margin: 0;
+}
+
+/* 库存清单头部样式 */
+.inventory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.inventory-header-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.inventory-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.inventory-select-all {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#batchDeleteBtn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 8px 12px;
+    transition: background-color 0.2s;
+    min-width: 80px;
+}
+
+#batchDeleteBtn:hover {
+    background-color: #c82333;
+}
+
+/* 响应式设计 */
+@media (max-width: 767px) {
+    .inventory-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .inventory-header-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .inventory-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
 }
 
 .main-panel {

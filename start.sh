@@ -4,7 +4,7 @@
 echo "启动仓库管理系统..."
 
 # 首先确保服务器在运行
-cd /home/shanbei/warehouse-manager
+cd /Users/shanbei/.openclaw/workspace/3ei-InventoryMaster
 node server.js > server.log 2>&1 &
 
 # 等待服务器启动

@@ -3,14 +3,125 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const pinyin = require('pinyin');
+const jwt = require('jsonwebtoken');
+const AuthSystem = require('./auth');
 
 const app = express();
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, 'warehouse-data.json');
 
+// 初始化身份验证系统
+const authSystem = new AuthSystem();
+
+// 中间件
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+
+// 验证JWT的中间件
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+        return res.status(401).json({ error: 'Access denied. No token provided.' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET || 'your-very-secure-secret-key-change-this-in-production', (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Invalid or expired token.' });
+        }
+        req.user = user;
+        next();
+    });
+};
+
+// 登录API - 不需要验证
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    // 获取客户端IP地址，考虑代理情况
+    const ip = req.headers['x-forwarded-for'] || 
+               req.connection.remoteAddress || 
+               req.socket.remoteAddress ||
+               (req.connection.socket ? req.connection.socket.remoteAddress : null);
+    
+    authSystem.login(username, password, ip)
+        .then(result => {
+            if (result.success) {
+                res.json(result);
+            } else {
+                res.status(401).json({ error: result.error });
+            }
+        })
+        .catch(err => {
+            res.status(401).json({ error: err.message });
+        });
+});
+
+// 添加对Token尝试次数的跟踪
+const tokenFailureAttempts = new Map(); // 存储Token失败尝试次数
+const blockedTokenUsers = new Map(); // 存储被封禁的用户
+
+// 注册API - 不需要验证
+app.post('/api/register', (req, res) => {
+    const { username, password, token } = req.body;
+    
+    // 检查用户是否被封禁
+    if (blockedTokenUsers.has(username)) {
+        const blockInfo = blockedTokenUsers.get(username);
+        if (Date.now() < blockInfo.expireTime) {
+            return res.status(400).json({ error: `User ${username} is temporarily blocked due to invalid token attempts. Try again later.` });
+        } else {
+            // 解除封禁
+            blockedTokenUsers.delete(username);
+            tokenFailureAttempts.delete(username);
+        }
+    }
+    
+    authSystem.register(username, password, token)
+        .then(result => {
+            if (result.success) {
+                // 注册成功，清除相关记录
+                tokenFailureAttempts.delete(username);
+                res.json(result);
+            } else {
+                res.status(400).json({ error: result.error });
+            }
+        })
+        .catch(err => {
+            // 检查是否是Token验证错误
+            if (err.message.includes('Invalid token') || 
+                err.message.includes('already used') || 
+                err.message.includes('expired')) {
+                
+                // 记录失败尝试
+                let attempts = tokenFailureAttempts.get(username) || 0;
+                attempts++;
+                tokenFailureAttempts.set(username, attempts);
+                
+                // 如果失败次数达到5次，封禁30分钟
+                if (attempts >= 5) {
+                    const expireTime = Date.now() + 30 * 60 * 1000; // 30分钟后
+                    blockedTokenUsers.set(username, { expireTime: expireTime });
+                    
+                    return res.status(400).json({ 
+                        error: `Too many invalid token attempts. User ${username} is blocked for 30 minutes.` 
+                    });
+                }
+            }
+            
+            res.status(400).json({ error: err.message });
+        });
+});
+
+// 生成注册Token的API
+app.post('/api/generate-token', (req, res) => {
+    const token = authSystem.generateRegistrationToken();
+    res.json({ token: token });
+});
+
+// 需要认证的API路由
+app.use('/api/inventory', authenticateToken);
+app.use('/api/search', authenticateToken);
 
 // 确保数据文件存在
 function ensureDataFile() {
@@ -56,10 +167,13 @@ app.post('/api/inventory', (req, res) => {
             return res.status(400).json({ error: 'Name and quantity are required' });
         }
 
+        // 防止注入攻击
+        const sanitizedName = name.replace(/[<>'"&;]/g, '');
+        
         const data = readData();
         const newItem = {
             id: data.nextId++,
-            name: name.trim(),
+            name: sanitizedName.trim(),
             quantity: parseInt(quantity)
         };
         data.items.push(newItem);
@@ -192,7 +306,8 @@ function getFirstLetters(text) {
 
 app.get('/api/search/:query', (req, res) => {
     try {
-        const query = req.params.query.toLowerCase();
+        // 防止注入攻击
+        const query = req.params.query.replace(/[<>'"&;]/g, '').toLowerCase();
         const data = readData();
         
         const filteredItems = data.items.filter(item => {
@@ -224,7 +339,76 @@ app.get('/api/search/:query', (req, res) => {
     }
 });
 
+// 提供主页
+app.get('/', (req, res) => {
+    const indexPath = path.join(__dirname, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        fs.readFile(indexPath, 'utf8', (err, data) => {
+            if (err) {
+                res.status(500).send('Error reading index.html');
+            } else {
+                res.send(data);
+            }
+        });
+    } else {
+        res.status(404).send('Main page not found');
+    }
+});
+
+// 提供登录页面
+app.get('/login', (req, res) => {
+    const loginPath = path.join(__dirname, 'login.html');
+    if (fs.existsSync(loginPath)) {
+        fs.readFile(loginPath, 'utf8', (err, data) => {
+            if (err) {
+                res.status(500).send('Error reading login.html');
+            } else {
+                res.send(data);
+            }
+        });
+    } else {
+        res.status(404).send('Login page not found');
+    }
+});
+
+// 提供注册页面
+app.get('/register', (req, res) => {
+    const registerPath = path.join(__dirname, 'register.html');
+    if (fs.existsSync(registerPath)) {
+        fs.readFile(registerPath, 'utf8', (err, data) => {
+            if (err) {
+                res.status(500).send('Error reading register.html');
+            } else {
+                res.send(data);
+            }
+        });
+    } else {
+        res.status(404).send('Register page not found');
+    }
+});
+
+// 提供设置页面
+app.get('/settings', (req, res) => {
+    const settingsPath = path.join(__dirname, 'settings.html');
+    if (fs.existsSync(settingsPath)) {
+        fs.readFile(settingsPath, 'utf8', (err, data) => {
+            if (err) {
+                res.status(500).send('Error reading settings.html');
+            } else {
+                res.send(data);
+            }
+        });
+    } else {
+        res.status(404).send('Settings page not found');
+    }
+});
+
+// 静态文件服务 - 放在最后
+app.use(express.static('.'));
+
+ensureDataFile();
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`仓库管理系统服务器运行在 http://0.0.0.0:${PORT}`);
-    console.log(`请在浏览器中访问 http://你的电脑IP:${PORT} 来使用仓库管理系统`);
+    console.log(`请在浏览器中访问 http://你的电脑IP:${PORT}/login 来使用仓库管理系统`);
 });

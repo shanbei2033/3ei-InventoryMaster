@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>库存大师 - 登入</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>登入</h1>
+            <p>请输入您的凭据</p>
+        </div>
+        
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required pattern="[a-zA-Z0-9]{1,12}" title="用户名只能包含英文和数字，最多12位">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.&lt;&gt;\/?]).{9,}" title="密码必须至少9位，包含大小写英文、数字和特殊符号">
+            </div>
+            
+            <button type="submit" class="login-btn">登录</button>
+            
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+        
+        <div class="register-link">
+            <p>还没有账户？ <a href="/register">点击这里注册</a></p>
+        </div>
+    </div>
+
+    <script>
+        // 显示提示气泡的函数
+        function showTooltip(inputElement, message) {
+            // 移除现有的提示气泡
+            hideAllTooltips();
+            
+            // 创建提示气泡元素
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = message;
+            tooltip.style.cssText = `
+                position: absolute;
+                background: #333;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 14px;
+                z-index: 1000;
+                white-space: nowrap;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            `;
+            
+            // 计算气泡位置
+            const rect = inputElement.getBoundingClientRect();
+            tooltip.style.left = rect.left + window.scrollX + 'px';
+            tooltip.style.top = rect.bottom + window.scrollY + 5 + 'px';
+            
+            document.body.appendChild(tooltip);
+            
+            // 添加移除事件
+            const removeTooltip = () => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+                document.removeEventListener('click', removeTooltip);
+                inputElement.removeEventListener('blur', removeTooltip);
+            };
+            
+            // 点击其他地方或输入框失去焦点时移除气泡
+            document.addEventListener('click', removeTooltip);
+            inputElement.addEventListener('blur', removeTooltip);
+        }
+        
+        // 隐藏所有提示气泡
+        function hideAllTooltips() {
+            const tooltips = document.querySelectorAll('.tooltip');
+            tooltips.forEach(tooltip => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+            });
+        }
+        
+        // 为用户名输入框添加点击事件
+        document.getElementById('username').addEventListener('focus', function(e) {
+            showTooltip(e.target, '用户名只能包含英文和数字，最多12位');
+        });
+        
+        // 为密码输入框添加点击事件
+        document.getElementById('password').addEventListener('focus', function(e) {
+            showTooltip(e.target, '密码必须至少9位，包含大小写英文、数字和特殊符号');
+        });
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    // 存储令牌
+                    localStorage.setItem('authToken', data.token);
+                    
+                    // 重定向到主应用
+                    window.location.href = '/';
+                } else {
+                    errorMessage.textContent = data.error || '登录失败';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = '网络错误，请稍后再试';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+    <footer style="text-align: center; padding: 20px; margin-top: 20px; color: #999; font-size: 14px; position: fixed; bottom: 0; width: 100%;">
+        <p>© 2026 库存大师 InventoryMaster | Made by 小贝 | Version R2.3.3</p>
+    </footer>
+</body>
+</html>

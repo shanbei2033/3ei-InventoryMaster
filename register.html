@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">库存大师 - 注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .lang-switcher {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .lang-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .register-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .register-form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .register-form input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .register-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #2ecc71 0%, #3498db 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success-message {
+            color: #27ae60;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="lang-switcher">
+            <button id="zhBtn" class="lang-btn active">中文</button>
+            <button id="enBtn" class="lang-btn">EN</button>
+        </div>
+        
+        <div class="register-header">
+            <h1 id="registerTitle">注册新账户</h1>
+            <p id="registerSubtitle">请输入注册信息</p>
+        </div>
+        
+        <form class="register-form" id="registerForm">
+            <div class="form-group">
+                <label for="regUsername" id="regUsernameLabel">用户名</label>
+                <input type="text" id="regUsername" name="username" required pattern="[a-zA-Z0-9]{1,12}" title="用户名只能包含英文和数字，最多12位" placeholder="输入用户名">
+            </div>
+            
+            <div class="form-group">
+                <label for="regPassword" id="regPasswordLabel">密码</label>
+                <input type="password" id="regPassword" name="password" required pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.&lt;&gt;\/?]).{9,}" title="密码必须至少9位，包含大小写英文、数字和特殊符号" placeholder="输入密码">
+            </div>
+            
+            <div class="form-group">
+                <label for="regToken" id="regTokenLabel">注册Token</label>
+                <input type="password" id="regToken" name="token" required placeholder="输入注册Token">
+            </div>
+            
+            <button type="submit" class="register-btn" id="registerBtn">注册</button>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+        </form>
+        
+        <div class="login-link">
+            <p id="loginPrompt">已有账户？ <a href="/login" id="loginLink">点击这里登录</a></p>
+        </div>
+    </div>
+
+    <script>
+        // 国际化翻译字典
+        const registerTranslations = {
+            'zh-CN': {
+                'pageTitle': '库存大师 - 注册',
+                'registerTitle': '注册新账户',
+                'registerSubtitle': '请输入注册信息',
+                'regUsernameLabel': '用户名',
+                'regPasswordLabel': '密码',
+                'regTokenLabel': '注册Token',
+                'registerBtn': '注册',
+                'loginPrompt': '已有账户？ <a href="/login">点击这里登录</a>',
+                'loginLinkText': '点击这里登录',
+                'regUsernamePlaceholder': '输入用户名',
+                'regPasswordPlaceholder': '输入密码',
+                'regTokenPlaceholder': '输入注册Token',
+                'regUsernameHint': '用户名只能包含英文和数字，最多12位',
+                'regPasswordHint': '密码必须至少9位，包含大小写英文、数字和特殊符号',
+                'regTokenHint': '请输入管理员提供的注册Token',
+                'registrationFailed': '注册失败',
+                'networkError': '网络错误，请稍后再试',
+                'registrationSuccess': '注册成功！请登录。',
+                'redirecting': '3秒后重定向到登录页面',
+                'alreadyHaveAccount': '已有账户？',
+                'noAccountYet': '还没有账户？'
+            },
+            'en-US': {
+                'pageTitle': 'InventoryMaster - Register',
+                'registerTitle': 'Register New Account',
+                'registerSubtitle': 'Please enter registration info',
+                'regUsernameLabel': 'Username',
+                'regPasswordLabel': 'Password',
+                'regTokenLabel': 'Registration Token',
+                'registerBtn': 'Register',
+                'loginPrompt': 'Already have an account? <a href="/login">Click here to login</a>',
+                'loginLinkText': 'Click here to login',
+                'regUsernamePlaceholder': 'Input username',
+                'regPasswordPlaceholder': 'Input password',
+                'regTokenPlaceholder': 'Input registration token',
+                'regUsernameHint': 'Username can only contain English letters and numbers, up to 12 characters',
+                'regPasswordHint': 'Password must be at least 9 characters long and include uppercase, lowercase, numbers, and special symbols',
+                'regTokenHint': 'Please enter the registration token provided by the administrator',
+                'registrationFailed': 'Registration Failed',
+                'networkError': 'Network Error, Please try again later',
+                'registrationSuccess': 'Registration Successful! Please login.',
+                'redirecting': 'Redirecting to login page in 3 seconds',
+                'alreadyHaveAccount': 'Already have an account?',
+                'noAccountYet': 'No account yet?'
+            }
+        };
+
+        // 获取当前语言
+        function getCurrentLanguage() {
+            return localStorage.getItem('language') || 'zh-CN';
+        }
+
+        // 更新界面文本
+        function updateUIText(lang) {
+            const translations = registerTranslations[lang];
+            if (!translations) return;
+
+            document.title = translations['pageTitle'];
+            document.getElementById('registerTitle').textContent = translations['registerTitle'];
+            document.getElementById('registerSubtitle').textContent = translations['registerSubtitle'];
+            document.getElementById('regUsernameLabel').textContent = translations['regUsernameLabel'];
+            document.getElementById('regPasswordLabel').textContent = translations['regPasswordLabel'];
+            document.getElementById('regTokenLabel').textContent = translations['regTokenLabel'];
+            document.getElementById('registerBtn').textContent = translations['registerBtn'];
+            document.getElementById('loginPrompt').innerHTML = translations['loginPrompt'];
+            document.getElementById('regUsername').placeholder = translations['regUsernamePlaceholder'];
+            document.getElementById('regPassword').placeholder = translations['regPasswordPlaceholder'];
+            document.getElementById('regToken').placeholder = translations['regTokenPlaceholder'];
+
+            // 更新链接文本（保留href）
+            const loginLink = document.querySelector('#loginPrompt a');
+            if (loginLink) {
+                loginLink.textContent = translations['loginLinkText'];
+            }
+        }
+
+        // 显示提示气泡的函数
+        function showTooltip(inputElement, message) {
+            // 移除现有的提示气泡
+            hideAllTooltips();
+            
+            // 创建提示气泡元素
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = message;
+            tooltip.style.cssText = `
+                position: absolute;
+                background: #333;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 14px;
+                z-index: 1000;
+                white-space: nowrap;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            `;
+            
+            // 计算气泡位置
+            const rect = inputElement.getBoundingClientRect();
+            tooltip.style.left = rect.left + window.scrollX + 'px';
+            tooltip.style.top = rect.bottom + window.scrollY + 5 + 'px';
+            
+            document.body.appendChild(tooltip);
+            
+            // 添加移除事件
+            const removeTooltip = () => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+                document.removeEventListener('click', removeTooltip);
+                inputElement.removeEventListener('blur', removeTooltip);
+            };
+            
+            // 点击其他地方或输入框失去焦点时移除气泡
+            document.addEventListener('click', removeTooltip);
+            inputElement.addEventListener('blur', removeTooltip);
+        }
+        
+        // 隐藏所有提示气泡
+        function hideAllTooltips() {
+            const tooltips = document.querySelectorAll('.tooltip');
+            tooltips.forEach(tooltip => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+            });
+        }
+        
+        // 为用户名输入框添加点击事件
+        document.getElementById('regUsername').addEventListener('focus', function(e) {
+            const lang = getCurrentLanguage();
+            const hint = registerTranslations[lang]['regUsernameHint'];
+            showTooltip(e.target, hint);
+        });
+        
+        // 为密码输入框添加点击事件
+        document.getElementById('regPassword').addEventListener('focus', function(e) {
+            const lang = getCurrentLanguage();
+            const hint = registerTranslations[lang]['regPasswordHint'];
+            showTooltip(e.target, hint);
+        });
+        
+        // 为Token输入框添加点击事件
+        document.getElementById('regToken').addEventListener('focus', function(e) {
+            const lang = getCurrentLanguage();
+            const hint = registerTranslations[lang]['regTokenHint'];
+            showTooltip(e.target, hint);
+        });
+        
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const token = document.getElementById('regToken').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const lang = getCurrentLanguage();
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, token })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    successMessage.textContent = registerTranslations[lang]['registrationSuccess'];
+                    successMessage.style.display = 'block';
+                    errorMessage.style.display = 'none';
+                    
+                    // 重置表单
+                    document.getElementById('registerForm').reset();
+                    
+                    // 3秒后重定向到登录页面
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 3000);
+                } else {
+                    errorMessage.textContent = data.error || registerTranslations[lang]['registrationFailed'];
+                    errorMessage.style.display = 'block';
+                    successMessage.style.display = 'none';
+                }
+            } catch (error) {
+                errorMessage.textContent = registerTranslations[lang]['networkError'];
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+        });
+
+        // 语言切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const zhBtn = document.getElementById('zhBtn');
+            const enBtn = document.getElementById('enBtn');
+            const currentLang = getCurrentLanguage();
+            
+            // 设置初始激活状态
+            if (currentLang === 'en-US') {
+                zhBtn.classList.remove('active');
+                enBtn.classList.add('active');
+            } else {
+                zhBtn.classList.add('active');
+                enBtn.classList.remove('active');
+            }
+            
+            // 更新界面文本
+            updateUIText(currentLang);
+            
+            // 中文按钮点击事件
+            zhBtn.addEventListener('click', function() {
+                localStorage.setItem('language', 'zh-CN');
+                zhBtn.classList.add('active');
+                enBtn.classList.remove('active');
+                updateUIText('zh-CN');
+            });
+            
+            // 英文按钮点击事件
+            enBtn.addEventListener('click', function() {
+                localStorage.setItem('language', 'en-US');
+                enBtn.classList.add('active');
+                zhBtn.classList.remove('active');
+                updateUIText('en-US');
+            });
+        });
+    </script>
+    <footer style="text-align: center; padding: 20px; margin-top: 20px; color: #999; font-size: 14px; position: fixed; bottom: 0; width: 100%;">
+        <p>© 2026 库存大师 InventoryMaster | Made by 小贝 | Version R3.0.1</p>
+    </footer>
+</body>
+</html>
