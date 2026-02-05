@@ -3,6 +3,17 @@
 您的库存管理系统代码已准备就绪，可以推送到GitHub仓库：
 https://github.com/shanbei2033/3ei-InventoryMaster
 
+## 重要前提条件
+
+在推送之前，您必须先在GitHub网站上创建仓库：
+1. 访问 https://github.com
+2. 登录您的账户
+3. 点击 "New repository"
+4. 仓库名称填写 "3ei-InventoryMaster"
+5. 选择 "Public" 或 "Private"
+6. 一定不要勾选 "Initialize this repository with a README" 或任何模板
+7. 点击 "Create repository"
+
 ## 推送步骤
 
 1. 打开终端（Terminal）
@@ -22,11 +33,10 @@ git push -u origin main
 
 1. 访问 https://github.com/settings/tokens
 2. 点击 "Generate new token" -> "Classic personal access tokens"
-3. 点击 "Generate new token"
-4. 为令牌命名（如 "inventory-master"）
-5. 选择适当的权限（至少选择 repo 权限）
-6. 点击 "Generate token"
-7. 复制生成的令牌（注意：之后不会再显示）
+3. 为令牌命名（如 "inventory-master"）
+4. 选择适当的权限（至少选择 repo 权限）
+5. 点击 "Generate token"
+6. 复制生成的令牌（注意：之后不会再显示）
 
 ## 推送成功后
 
@@ -45,3 +55,12 @@ https://github.com/shanbei2033/3ei-InventoryMaster
 - 国际化支持
 
 项目已包含所有功能，包括多用户支持、安全登录、实时搜索、数据持久化等。
+
+## 故障排除
+
+如果您仍然遇到 "remote end hung up unexpectedly" 错误：
+
+1. 确认远程仓库已创建
+2. 确认仓库名称拼写正确
+3. 确认网络连接正常
+4. 检查是否有防火墙阻止连接
