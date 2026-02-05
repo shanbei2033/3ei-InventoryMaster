@@ -1,8 +1,44 @@
+# 依赖目录
 node_modules/
+
+# 日志文件
 *.log
+
+# 进程ID文件
+*.pid
+
+# 临时数据文件
 .DS_Store
+Thumbs.db
+
+# 压缩包
+*.tar.gz
+*.zip
+*.rar
+
+# 环境变量文件
 .env
-config.json
-warehouse-data.json
-dist/
-build/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 浏览器文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 数据库文件 (如果有的话)
+*.db
+*.sqlite
+
+# 缓存目录
+.cache/
+tmp/
+temp/
