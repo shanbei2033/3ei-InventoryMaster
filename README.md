@@ -84,4 +84,4 @@ MIT License
 
 ## 致谢
 
-本项目由小扇和小贝基于OpenClaw平台开发。感谢OpenClaw提供的强大AI辅助开发能力，使得整个开发过程更加高效和智能化。
+基于OpenClaw部署的AI小扇和小贝
