@@ -1,7 +1,5 @@
 # 库存大师 (InventoryMaster) 
 
-仓库管理系统 R3.0.1 - 专业库存管理解决方案
-
 ## 简介
 
 库存大师是一个基于Web的库存管理系统，支持多用户、安全认证和实时搜索功能。系统采用Node.js后端和原生前端技术栈，具备完整的用户管理和库存管理功能。
@@ -74,10 +72,10 @@ node server.js
 - **认证**: JWT + bcrypt
 - **搜索**: 拼音和首字母匹配
 
-## 许可证
+## License
 
 MIT License
 
 ## 致谢
 
-基于OpenClaw部署的AI小扇和小贝编写
+基于OpenClaw部署的AI编写
